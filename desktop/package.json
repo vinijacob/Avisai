@@ -1,0 +1,13 @@
+{
+  "name": "avisai-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Avisaí desktop app",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "44.9.0"
+  }
+}
