@@ -1,8 +1,9 @@
 "use client";
 
-import { Clock, MapPin, Users } from "lucide-react";
+import { Clock, Lock, MapPin, Users } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
+import { areaLabels } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { dateParts, formatTimeRange, isHappeningNow, relativeDay } from "@/lib/format";
 import type { EventItem } from "@/lib/types";
@@ -57,6 +58,7 @@ export function EventCard({
               </span>
             )}
             {event.category && <Badge>{event.category}</Badge>}
+            {event.area && <AreaBadge event={event} />}
           </div>
 
           <h3 className="text-lg leading-snug font-semibold tracking-tight text-balance">{event.title}</h3>
@@ -83,6 +85,16 @@ export function EventCard({
         </div>
       </div>
     </motion.article>
+  );
+}
+
+export function AreaBadge({ event }: { event: EventItem }) {
+  if (!event.area) return null;
+  return (
+    <Badge className={cn(!event.can_attend && "border-dashed bg-transparent")}>
+      <Lock className="size-3" />
+      {areaLabels[event.area]}
+    </Badge>
   );
 }
 

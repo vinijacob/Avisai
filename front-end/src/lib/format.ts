@@ -62,3 +62,29 @@ export function initials(name: string) {
     .map((part) => part[0]?.toUpperCase())
     .join("");
 }
+
+const monthYear = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" });
+
+export function formatMonthYear(iso: string) {
+  return monthYear.format(new Date(iso));
+}
+
+export function ageFrom(birthDate: string, now = new Date()) {
+  const [year, month, day] = birthDate.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  const hadBirthday = now.getMonth() + 1 > month || (now.getMonth() + 1 === month && now.getDate() >= day);
+  return now.getFullYear() - year - (hadBirthday ? 0 : 1);
+}
+
+export function toDateInput(date: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+export function formatPhone(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  const split = digits.length === 11 ? 7 : 6;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, split)}-${digits.slice(split)}`;
+}

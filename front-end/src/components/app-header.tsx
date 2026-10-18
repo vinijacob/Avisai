@@ -1,11 +1,12 @@
 "use client";
 
-import { LogOut, Plus } from "lucide-react";
+import { LogOut, Plus, UserRound } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
+import type { User } from "@/lib/types";
 import { useAuth } from "./auth-provider";
 import { Logo } from "./logo";
 import { Avatar } from "./ui";
@@ -40,7 +41,7 @@ export function AppHeader() {
               <span className="hidden sm:inline">Novo evento</span>
             </Link>
           )}
-          {user && <UserMenu name={user.name} email={user.email} isAdmin={isAdmin} onLogout={logout} />}
+          {user && <UserMenu user={user} onLogout={logout} />}
         </div>
       </div>
     </header>
@@ -82,17 +83,9 @@ function NavLinks({ isAdmin, pathname }: { isAdmin: boolean; pathname: string })
   );
 }
 
-function UserMenu({
-  name,
-  email,
-  isAdmin,
-  onLogout,
-}: {
-  name: string;
-  email: string;
-  isAdmin: boolean;
-  onLogout: () => void;
-}) {
+function UserMenu({ user, onLogout }: { user: User; onLogout: () => void }) {
+  const { name, email, course } = user;
+  const isAdmin = user.role === "admin";
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -126,10 +119,21 @@ function UserMenu({
             <div className="px-3 py-2.5">
               <p className="truncate font-medium">{name}</p>
               <p className="truncate text-sm text-muted">{email}</p>
-              <p className="mt-2 inline-block rounded-full bg-surface-2 px-2 py-0.5 font-mono text-[11px] tracking-wide text-muted uppercase">
-                {isAdmin ? "Administrador" : "Aluno"}
-              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                <span className="rounded-full bg-surface-2 px-2 py-0.5 font-mono text-[11px] tracking-wide text-muted uppercase">
+                  {isAdmin ? "Administrador" : "Aluno"}
+                </span>
+                {course && <span className="truncate text-xs text-muted">{course}</span>}
+              </div>
             </div>
+            <Link
+              href="/perfil"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 rounded-2xl px-3 py-2 text-sm text-muted transition hover:bg-surface-2 hover:text-ink"
+            >
+              <UserRound className="size-4" />
+              Meu perfil
+            </Link>
             {isAdmin && (
               <Link
                 href="/usuarios"

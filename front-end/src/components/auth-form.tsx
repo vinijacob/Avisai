@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { api } from "@/lib/api";
+import { CourseSelect } from "./course-select";
 import { Button, Field, Input } from "./ui";
 
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
@@ -13,6 +14,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [course, setCourse] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isLogin = mode === "login";
@@ -23,7 +25,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     setError(null);
     try {
       if (isLogin) await api.login(email, password);
-      else await api.register(name, email, password);
+      else await api.register(name, email, password, course);
       router.replace("/eventos");
       router.refresh();
     } catch (err) {
@@ -53,11 +55,11 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
 
       <form onSubmit={submit} className="flex flex-col gap-4">
         {!isLogin && (
-          <Field label="Nome">
+          <Field label="Nome completo">
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Seu nome"
+              placeholder="Seu nome completo"
               autoComplete="name"
               required
               minLength={2}
@@ -75,6 +77,11 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             required
           />
         </Field>
+        {!isLogin && (
+          <Field label="Curso" hint="Define os eventos da sua área">
+            <CourseSelect value={course} onChange={setCourse} required />
+          </Field>
+        )}
         <Field label="Senha" hint={isLogin ? undefined : "Mínimo de 8 caracteres"}>
           <Input
             type="password"

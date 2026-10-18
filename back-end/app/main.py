@@ -4,15 +4,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app import models  # noqa: F401  (registers tables on Base.metadata)
 from app.config import get_settings
-from app.db import Base, engine
-from app.routers import auth, events, users
+from app.routers import auth, catalog, events, users
+from app.schema_sync import init_db
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
-    Base.metadata.create_all(engine)
+    init_db()
     yield
 
 
@@ -26,7 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for router in (auth.router, events.router, users.router):
+for router in (auth.router, catalog.router, events.router, users.router):
     app.include_router(router, prefix="/api")
 
 

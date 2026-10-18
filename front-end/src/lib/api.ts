@@ -1,4 +1,13 @@
-import type { AttendanceStatus, Attendee, EventInput, EventItem, Role, User } from "./types";
+import type {
+  AttendanceStatus,
+  Attendee,
+  Catalog,
+  EventInput,
+  EventItem,
+  ProfileInput,
+  Role,
+  User,
+} from "./types";
 
 export class ApiError extends Error {
   constructor(
@@ -44,9 +53,12 @@ export const api = {
   me: () => request<User>("/auth/me"),
   login: (email: string, password: string) =>
     request<User>("/auth/login", { method: "POST", body: json({ email, password }) }),
-  register: (name: string, email: string, password: string) =>
-    request<User>("/auth/register", { method: "POST", body: json({ name, email, password }) }),
+  register: (name: string, email: string, password: string, course: string) =>
+    request<User>("/auth/register", { method: "POST", body: json({ name, email, password, course }) }),
   logout: () => request<void>("/auth/logout", { method: "POST" }),
+  updateProfile: (data: ProfileInput) => request<User>("/users/me", { method: "PUT", body: json(data) }),
+
+  catalog: () => request<Catalog>("/catalog"),
 
   events: (scope: "upcoming" | "past") => request<EventItem[]>(`/events?scope=${scope}`),
   event: (id: number) => request<EventItem>(`/events/${id}`),

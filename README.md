@@ -7,6 +7,8 @@
 ## Funcionalidades
 
 - Cadastro e login de alunos (sessão via cookie `httpOnly` com JWT)
+- Perfil do aluno: nome completo, curso, período, turno, data de nascimento (idade), matrícula, telefone e bio
+- Eventos **Gerais** (abertos a todos) ou **exclusivos de uma área** (Tecnologia, Saúde, Negócios, Engenharias, Humanas): só alunos de cursos daquela área podem confirmar presença
 - Administradores (coordenadores e professores) criam, editam e excluem eventos
 - Lista de eventos próximos e anteriores, com busca e filtro por categoria
 - Alunos marcam presença: **Vou** ou **Não vou**
@@ -32,7 +34,9 @@ Avisaí/
 │   └── app/
 │       ├── models/      # SQLAlchemy models (one file per model)
 │       ├── schemas/     # Pydantic schemas (one file per schema)
-│       ├── routers/     # API routes (auth, events, users)
+│       ├── routers/     # API routes (auth, catalog, events, users)
+│       ├── catalog.py   # Areas and courses
+│       ├── schema_sync.py # Creates tables and adds new columns
 │       ├── config.py    # Settings (.env)
 │       ├── db.py        # Engine and session
 │       ├── deps.py      # Auth dependencies
@@ -75,7 +79,7 @@ python -m app.cli seed-demo
 uvicorn app.main:app --reload --port 8000
 ```
 
-As tabelas são criadas automaticamente na primeira execução. A documentação da API fica em `http://localhost:8000/docs`.
+As tabelas são criadas automaticamente na primeira execução, e colunas novas são adicionadas em bancos já existentes (`app/schema_sync.py`). A documentação da API fica em `http://localhost:8000/docs`.
 
 ### 3. Frontend
 
@@ -107,6 +111,13 @@ Por padrão o app abre `http://localhost:3000`. Para outra porta: `AVISAI_URL=ht
 | `admin`   | Tudo do aluno + criar/editar/excluir eventos, ver presenças, gerenciar usuários |
 
 Todo novo cadastro entra como aluno. Um admin pode promover outros usuários pela tela **Usuários**.
+
+## Áreas e cursos
+
+Cada curso pertence a uma área (lista em `back-end/app/catalog.py`, exposta em `GET /api/catalog`). Ao criar um evento, o admin escolhe o **público**:
+
+- **Geral**: qualquer aluno pode marcar presença.
+- **Área específica** (ex.: Tecnologia): só alunos de cursos dessa área podem marcar "Vou". Os demais veem o evento com um cadeado. Admins não têm restrição.
 
 ## Licença
 

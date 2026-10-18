@@ -1,16 +1,17 @@
 "use client";
 
-import { ArrowLeft, CalendarDays, Clock, MapPin, Pencil, Trash2, Users } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clock, Globe, Lock, MapPin, Pencil, Trash2, Users } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { api } from "@/lib/api";
+import { areaLabels } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { dateParts, formatFullDate, formatTimeRange, relativeDay } from "@/lib/format";
 import type { AttendanceStatus, Attendee, EventItem } from "@/lib/types";
 import { useAuth } from "./auth-provider";
-import { GoingCount } from "./event-card";
+import { AreaBadge, GoingCount } from "./event-card";
 import { RsvpControl } from "./rsvp-control";
 import { useToast } from "./toast";
 import { Avatar, Badge, Button, Skeleton } from "./ui";
@@ -58,6 +59,7 @@ export function EventDetail({ id }: { id: number }) {
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center gap-2">
               {event.category && <Badge>{event.category}</Badge>}
+              <AreaBadge event={event} />
               <span className="text-sm font-medium text-accent-text first-letter:uppercase">
                 {relativeDay(event.starts_at)}
               </span>
@@ -80,6 +82,9 @@ export function EventDetail({ id }: { id: number }) {
             </Info>
             <Info icon={<Users />} label="Vagas">
               {event.capacity ? `${event.capacity} vagas` : "Sem limite"}
+            </Info>
+            <Info icon={event.area ? <Lock /> : <Globe />} label="Público">
+              {event.area ? `Exclusivo · ${areaLabels[event.area]}` : "Geral · todos os cursos"}
             </Info>
           </div>
 
@@ -105,7 +110,7 @@ export function EventDetail({ id }: { id: number }) {
               <span className="pb-1 font-mono text-sm tracking-[0.18em] text-muted uppercase">{month}</span>
             </div>
             <div className="flex flex-col gap-3">
-              <p className="text-sm font-medium">Você vai participar?</p>
+              {event.can_attend && <p className="text-sm font-medium">Você vai participar?</p>}
               <RsvpControl event={event} onChange={setEvent} size="lg" />
             </div>
             <GoingCount event={event} />
@@ -275,7 +280,9 @@ function AttendeesPanel({ eventId, version }: { eventId: number; version: string
                 <Avatar name={attendee.user.name} className="size-8 text-[10px]" />
                 <div className="flex min-w-0 flex-col">
                   <span className="truncate text-sm font-medium">{attendee.user.name}</span>
-                  <span className="truncate text-xs text-muted">{attendee.email}</span>
+                  <span className="truncate text-xs text-muted">
+                    {attendee.course ? `${attendee.course} · ${attendee.email}` : attendee.email}
+                  </span>
                 </div>
               </motion.li>
             ))}

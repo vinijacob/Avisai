@@ -32,6 +32,7 @@ def register(data: RegisterIn, response: Response, db: DbSession) -> User:
         email=data.email,
         password_hash=hash_password(data.password),
         role=Role.student,
+        course=data.course,
     )
     db.add(user)
     db.commit()

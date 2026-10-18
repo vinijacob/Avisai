@@ -1,11 +1,14 @@
 "use client";
 
+import { Globe, Lock } from "lucide-react";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { api } from "@/lib/api";
+import { areaLabels } from "@/lib/catalog";
+import { cn } from "@/lib/cn";
 import { fromLocalInput, toLocalInput } from "@/lib/format";
-import type { EventInput, EventItem } from "@/lib/types";
+import type { Area, EventInput, EventItem } from "@/lib/types";
 import { EventCard } from "./event-card";
 import { useAuth } from "./auth-provider";
 import { useToast } from "./toast";
@@ -13,11 +16,17 @@ import { Button, Field, Input, Textarea } from "./ui";
 
 const categories = ["Palestra", "Workshop", "Prova", "Reunião", "Cultural", "Esportes", "Aviso"];
 
+const audiences: { value: Area | null; label: string }[] = [
+  { value: null, label: "Geral" },
+  ...(Object.entries(areaLabels) as [Area, string][]).map(([value, label]) => ({ value, label })),
+];
+
 type FormState = {
   title: string;
   description: string;
   location: string;
   category: string;
+  area: Area | null;
   starts_at: string;
   ends_at: string;
   capacity: string;
@@ -29,6 +38,7 @@ function initialState(event?: EventItem): FormState {
     description: event?.description ?? "",
     location: event?.location ?? "",
     category: event?.category ?? "",
+    area: event?.area ?? null,
     starts_at: toLocalInput(event?.starts_at ?? null),
     ends_at: toLocalInput(event?.ends_at ?? null),
     capacity: event?.capacity ? String(event.capacity) : "",
@@ -55,6 +65,7 @@ export function EventForm({ event }: { event?: EventItem }) {
       description: form.description,
       location: form.location || null,
       category: form.category || null,
+      area: form.area,
       starts_at: starts,
       ends_at: fromLocalInput(form.ends_at),
       capacity: form.capacity ? Number(form.capacity) : null,
@@ -84,6 +95,7 @@ export function EventForm({ event }: { event?: EventItem }) {
     description: form.description,
     location: form.location || null,
     category: form.category || null,
+    area: form.area,
     starts_at: previewStart,
     ends_at: fromLocalInput(form.ends_at),
     capacity: form.capacity ? Number(form.capacity) : null,
@@ -91,6 +103,7 @@ export function EventForm({ event }: { event?: EventItem }) {
     created_at: tomorrow,
     going_count: event?.going_count ?? 0,
     my_status: null,
+    can_attend: true,
   };
 
   return (
@@ -129,6 +142,39 @@ export function EventForm({ event }: { event?: EventItem }) {
                     />
                   )}
                   <span className="relative">{category}</span>
+                </button>
+              );
+            })}
+          </div>
+        </Field>
+
+        <Field
+          label="Público"
+          hint={form.area ? `Só alunos de ${areaLabels[form.area]} podem confirmar` : "Aberto a todos os cursos"}
+        >
+          <div className="flex flex-wrap gap-2">
+            {audiences.map((audience) => {
+              const active = form.area === audience.value;
+              const Icon = audience.value ? Lock : Globe;
+              return (
+                <button
+                  key={audience.value ?? "general"}
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, area: audience.value }))}
+                  className={cn(
+                    "relative flex cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm transition",
+                    active ? "border-transparent text-bg" : "border-line text-muted hover:text-ink",
+                  )}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="audience-pill"
+                      className="absolute inset-0 rounded-full bg-ink"
+                      transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                    />
+                  )}
+                  <Icon className="relative size-3.5" />
+                  <span className="relative">{audience.label}</span>
                 </button>
               );
             })}

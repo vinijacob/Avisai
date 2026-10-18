@@ -1,11 +1,14 @@
 "use client";
 
-import { Check, X } from "lucide-react";
+import { Check, Lock, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/lib/api";
+import { areaLabels } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import type { AttendanceStatus, EventItem } from "@/lib/types";
+import { useAuth } from "./auth-provider";
 import { useToast } from "./toast";
 
 const options: { status: AttendanceStatus; label: string; icon: typeof Check }[] = [
@@ -23,6 +26,7 @@ export function RsvpControl({
   size?: "md" | "lg";
 }) {
   const notify = useToast();
+  const { user } = useAuth();
   const [pending, setPending] = useState(false);
   const [burst, setBurst] = useState(0);
   const [now] = useState(Date.now);
@@ -53,6 +57,37 @@ export function RsvpControl({
       <p className="text-sm text-muted">
         {event.my_status === "going" ? "Você marcou presença" : "Evento encerrado"}
       </p>
+    );
+  }
+
+  if (!event.can_attend && event.area) {
+    const missingCourse = user !== null && !user.course;
+    return (
+      <div className={cn("flex flex-col gap-1.5", size === "lg" && "w-full")}>
+        <span
+          className={cn(
+            "inline-flex items-center justify-center gap-1.5 rounded-full border border-dashed border-line font-medium text-muted",
+            size === "lg" ? "h-14 w-full text-[15px]" : "h-10 px-4 text-sm",
+          )}
+        >
+          <Lock className="size-4" />
+          Só para {areaLabels[event.area]}
+        </span>
+        {size === "lg" && (
+          <p className="text-center text-xs text-muted">
+            {missingCourse ? (
+              <>
+                <Link href="/perfil" className="text-ink underline decoration-accent decoration-2 underline-offset-4">
+                  Informe seu curso
+                </Link>{" "}
+                para participar de eventos da sua área.
+              </>
+            ) : (
+              "Este evento é exclusivo para alunos dessa área."
+            )}
+          </p>
+        )}
+      </div>
     );
   }
 

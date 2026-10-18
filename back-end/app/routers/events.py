@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import Select, func, or_, select
 from sqlalchemy.orm import joinedload
 
+from app.catalog import AREA_LABELS
 from app.deps import AdminUser, CurrentUser, DbSession
 from app.models import Attendance, AttendanceStatus, Event, User
 from app.schemas import AttendanceIn, AttendeeOut, AuthorOut, EventIn, EventOut
@@ -26,10 +27,11 @@ def _event_query(user: User) -> Select:
     return select(Event, going_count, my_status).options(joinedload(Event.author))
 
 
-def _to_out(event: Event, going_count: int, my_status: AttendanceStatus | None) -> EventOut:
+def _to_out(event: Event, going_count: int, my_status: AttendanceStatus | None, user: User) -> EventOut:
     out = EventOut.model_validate(event)
     out.going_count = going_count
     out.my_status = my_status
+    out.can_attend = event.is_open_to(user)
     return out
 
 
@@ -37,7 +39,7 @@ def _get_event_out(db: DbSession, event_id: int, user: User) -> EventOut:
     row = db.execute(_event_query(user).where(Event.id == event_id)).first()
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Evento não encontrado.")
-    return _to_out(*row)
+    return _to_out(*row, user)
 
 
 @router.get("", response_model=list[EventOut])
@@ -59,7 +61,7 @@ def list_events(
         stmt = stmt.where(
             or_(Event.title.ilike(pattern), Event.description.ilike(pattern), Event.category.ilike(pattern))
         )
-    return [_to_out(*row) for row in db.execute(stmt.limit(200)).all()]
+    return [_to_out(*row, user) for row in db.execute(stmt.limit(200)).all()]
 
 
 @router.get("/{event_id}", response_model=EventOut)
@@ -100,6 +102,11 @@ def set_attendance(event_id: int, data: AttendanceIn, db: DbSession, user: Curre
     event = db.get(Event, event_id, with_for_update=True)
     if event is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Evento não encontrado.")
+    if not event.is_open_to(user):
+        area = AREA_LABELS[event.area] if event.area else ""
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, f"Este evento é exclusivo para alunos da área de {area}."
+        )
 
     attendance = db.scalar(
         select(Attendance).where(Attendance.event_id == event_id, Attendance.user_id == user.id)
@@ -147,6 +154,7 @@ def list_attendees(event_id: int, db: DbSession, _: AdminUser) -> list[AttendeeO
         AttendeeOut(
             user=AuthorOut.model_validate(row.user),
             email=row.user.email,
+            course=row.user.course,
             status=row.status,
             updated_at=row.updated_at,
         )

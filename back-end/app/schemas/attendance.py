@@ -13,5 +13,6 @@ class AttendanceIn(BaseModel):
 class AttendeeOut(BaseModel):
     user: AuthorOut
     email: str
+    course: str | None
     status: AttendanceStatus
     updated_at: datetime

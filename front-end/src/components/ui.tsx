@@ -1,9 +1,15 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { initials } from "@/lib/format";
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
+import type {
+  ButtonHTMLAttributes,
+  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+} from "react";
 
 type Variant = "primary" | "ghost" | "outline" | "danger";
 
@@ -45,6 +51,17 @@ export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElem
 
 export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return <textarea className={cn(fieldClass, "min-h-32 resize-y py-3 leading-relaxed", className)} {...props} />;
+}
+
+export function Select({ className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <span className="relative block">
+      <select className={cn(fieldClass, "h-12 cursor-pointer appearance-none pr-10", className)} {...props}>
+        {children}
+      </select>
+      <ChevronDown className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-muted" />
+    </span>
+  );
 }
 
 export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {

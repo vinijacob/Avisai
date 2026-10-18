@@ -7,6 +7,7 @@ import type { User } from "@/lib/types";
 
 type AuthContextValue = {
   user: User | null;
+  setUser: (user: User) => void;
   logout: () => Promise<void>;
 };
 
@@ -40,5 +41,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.refresh();
   }, [router]);
 
-  return <AuthContext.Provider value={{ user, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, setUser, logout }}>{children}</AuthContext.Provider>;
 }

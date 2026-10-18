@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 
-from app.deps import AdminUser, DbSession
+from app.deps import AdminUser, CurrentUser, DbSession
 from app.models import User
-from app.schemas import RoleIn, UserOut
+from app.schemas import ProfileIn, RoleIn, UserOut
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -11,6 +11,14 @@ router = APIRouter(prefix="/users", tags=["users"])
 @router.get("", response_model=list[UserOut])
 def list_users(db: DbSession, _: AdminUser) -> list[User]:
     return list(db.scalars(select(User).order_by(User.role, User.name)).all())
+
+
+@router.put("/me", response_model=UserOut)
+def update_profile(data: ProfileIn, db: DbSession, user: CurrentUser) -> User:
+    for field, value in data.model_dump().items():
+        setattr(user, field, value)
+    db.commit()
+    return user
 
 
 @router.patch("/{user_id}/role", response_model=UserOut)

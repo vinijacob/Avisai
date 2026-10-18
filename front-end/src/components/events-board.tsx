@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarX2, Plus, Search } from "lucide-react";
+import { ArrowRight, CalendarX2, GraduationCap, Plus, Search } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -101,6 +101,24 @@ export function EventsBoard() {
           </p>
         )}
       </motion.header>
+
+      {user && !user.course && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+          <Link
+            href="/perfil"
+            className="group flex items-center gap-4 rounded-3xl border border-line bg-surface p-4 transition hover:border-ink/20"
+          >
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-accent text-accent-ink">
+              <GraduationCap className="size-5" />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="text-sm font-medium">Informe seu curso</span>
+              <span className="text-sm text-muted">Assim você libera os eventos exclusivos da sua área.</span>
+            </span>
+            <ArrowRight className="size-4 shrink-0 text-muted transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </motion.div>
+      )}
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

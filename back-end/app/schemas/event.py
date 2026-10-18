@@ -2,6 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field, model_validator
 
+from app.catalog import Area
 from app.models import AttendanceStatus
 from app.schemas.common import ORMModel, TrimmedStr
 from app.schemas.user import AuthorOut
@@ -12,6 +13,7 @@ class EventIn(BaseModel):
     description: TrimmedStr = Field(default="", max_length=5000)
     location: TrimmedStr | None = Field(default=None, max_length=120)
     category: TrimmedStr | None = Field(default=None, max_length=40)
+    area: Area | None = None
     starts_at: datetime
     ends_at: datetime | None = None
     capacity: int | None = Field(default=None, ge=1, le=100_000)
@@ -33,6 +35,7 @@ class EventOut(ORMModel):
     description: str
     location: str | None
     category: str | None
+    area: Area | None
     starts_at: datetime
     ends_at: datetime | None
     capacity: int | None
@@ -40,3 +43,4 @@ class EventOut(ORMModel):
     created_at: datetime
     going_count: int = 0
     my_status: AttendanceStatus | None = None
+    can_attend: bool = True

@@ -34,7 +34,9 @@ export function UsersTable() {
   const visible = useMemo(() => {
     const term = query.trim().toLowerCase();
     return (users ?? []).filter(
-      (u) => !term || u.name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term),
+      (u) =>
+        !term ||
+        [u.name, u.email, u.course].some((text) => text?.toLowerCase().includes(term)),
     );
   }, [users, query]);
 
@@ -57,7 +59,7 @@ export function UsersTable() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar por nome ou e-mail…"
+          placeholder="Buscar por nome, e-mail ou curso…"
           className="h-10 w-full rounded-full border border-line bg-surface pr-4 pl-10 text-sm outline-none transition focus:border-ink/40 focus:ring-4 focus:ring-accent/40"
         />
       </label>
@@ -88,6 +90,12 @@ export function UsersTable() {
                     {user.id === me?.id && <span className="ml-2 text-xs font-normal text-muted">(você)</span>}
                   </span>
                   <span className="truncate text-sm text-muted">{user.email}</span>
+                  {user.course && (
+                    <span className="truncate text-xs text-muted">
+                      {user.course}
+                      {user.semester && ` · ${user.semester}º período`}
+                    </span>
+                  )}
                 </div>
                 <div
                   className={cn(
